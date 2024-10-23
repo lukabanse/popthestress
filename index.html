@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pop The Stress!</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Noto+Serif:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #ffffff;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .bubble-wrap {
+            display: grid;
+            gap: 5px;
+            padding: 20px;
+            border-radius: 8px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .bubble {
+            width: 54px;
+            height: 54px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            background-size: cover;
+            background-repeat: no-repeat;
+            filter: brightness(1.1) contrast(1.1);
+            border-radius: 50%;
+        }
+
+        .bubble.popped {
+            filter: brightness(0.8) contrast(0.9) opacity(0.1);
+            transform: scale(0.9) translateY(2px);
+        }
+
+        /* Add subtle shadow to make it look more 3D */
+        .bubble:not(.popped)::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border-radius: 50%;
+            box-shadow: inset -2px -2px 4px rgba(0,0,0,0.2),
+                       inset 2px 2px 4px rgba(255,255,255,0.8);
+            pointer-events: none;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+        
+
+        .toggle-buttons button {
+            padding: 6px 12px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            border: none;
+            margin-top: 0em;
+        }
+
+        .toggle-buttons2 button {
+            padding: 6px 8px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            border: none;
+            margin-top: 0.5em;
+        }
+
+        .toggle-buttons button.active {
+            background-color: #303030;
+            color: white;
+        }
+
+        .toggle-buttons2 button.active {
+            background-color: #303030;
+            color: white;
+        }
+
+        .bebas-neue-regular {
+            font-family: "Bebas Neue", sans-serif;
+            font-weight: 400;
+            font-style: normal;
+        }
+
+
+        h2.title {
+            font-family: 'Noto Serif', serif;
+            font-size: 25px;
+            text-align: center;
+            margin: 0px 0;
+            font-weight: 300;
+            font-style: normal;
+            font-variation-settings:
+                "wdth" 300;
+        }
+
+        h1.title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 68px;
+            text-align: center;
+            font-style: normal;
+            margin: 0px 0;
+        }
+
+        .title {
+        position: relative;
+        display: inline-block;
+        }
+
+        .counter-badge {
+        position: absolute;
+        top: 38px;
+        right: -29px;
+        color: #fff;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: opacity 1s ease;
+        font-size: 20px;
+        rotate: 10deg;
+        font-weight: 100;
+        }
+
+        .shake {
+            animation: shake 0.2s;
+        }
+
+    @keyframes shake {
+        0% { transform: translate(1px, 1px) rotate(0deg); }
+        10% { transform: translate(-1px, -2px) rotate(-1deg); }
+        20% { transform: translate(-3px, 0px) rotate(1deg); }
+        30% { transform: translate(3px, 2px) rotate(0deg); }
+        40% { transform: translate(1px, -1px) rotate(1deg); }
+        50% { transform: translate(-1px, 2px) rotate(-1deg); }
+        60% { transform: translate(-3px, 1px) rotate(0deg); }
+        70% { transform: translate(3px, 1px) rotate(-1deg); }
+        80% { transform: translate(-1px, -1px) rotate(1deg); }
+        90% { transform: translate(1px, 2px) rotate(0deg); }
+        100% { transform: translate(1px, -2px) rotate(-1deg); }
+    }
+
+    </style>
+</head>
+<body>
+    <h2 class="title">Feeling anxious about the election?</h1>
+    <h1 class="title">Pop The Stress!<span id="counterBadge" class="counter-badge">0</span></h1>
+    <div class="toggle-buttons">
+        <button id="buttonBoth">Both</button>
+        <button id="buttonK">Kamala</button>
+        <button id="buttonD">Donald</button>
+        <button id="buttonColor">Color</button>
+    </div>
+    <div class="toggle-buttons2">
+        <button id="toggleSound">Sound</button>
+        <button id="toggleMusic">Music</button>
+    </div>
+    <div class="bubble-wrap" id="bubbleWrap"></div>
+
+    <script>
+        let mode = 'both'; // Default mode
+        let isDragging = false;
+        let soundEffectsEnabled = false;
+        let musicEnabled = false;
+        const colorPalette = ["#B22234","#3C3B6E"];
+        const backgroundMusic = new Audio('sounds/jazz.mp3');
+        backgroundMusic.loop = true;
+        let counter = 0;
+        let fadeTimeout;
+
+        document.getElementById('buttonK').addEventListener('click', () => setMode('K'));
+        document.getElementById('buttonD').addEventListener('click', () => setMode('D'));
+        document.getElementById('buttonBoth').addEventListener('click', () => setMode('both'));
+        document.getElementById('buttonColor').addEventListener('click', () => setMode('color'));
+        document.getElementById('toggleSound').addEventListener('click', toggleSoundEffects);
+        document.getElementById('toggleMusic').addEventListener('click', toggleMusic);
+        toggleSoundEffects();
+
+        function setMode(selectedMode) {
+            mode = selectedMode;
+            updateActiveButton();
+            createBubbles();
+        }
+
+        function updateActiveButton() {
+            document.querySelectorAll('.toggle-buttons button').forEach(button => {
+                button.classList.remove('active');
+            });
+            if (mode === 'K') {
+                document.getElementById('buttonK').classList.add('active');
+            } else if (mode === 'D') {
+                document.getElementById('buttonD').classList.add('active');
+            } else if (mode === 'color') {
+                document.getElementById('buttonColor').classList.add('active');
+            } else {
+                document.getElementById('buttonBoth').classList.add('active');
+            }
+        }
+
+        function getRandomImage() {
+            if (mode === 'K') {
+                return 'images/K.png';
+            } else if (mode === 'D') {
+                return 'images/D.png';
+            } else if (mode === 'color') {
+                return colorPalette[Math.floor(Math.random() * colorPalette.length)];
+            } else {
+                return Math.random() < 0.5 ? 'images/K.png' : 'images/D.png';
+            }
+        }
+
+        function createBubbles() {
+            const bubbleWrap = document.getElementById('bubbleWrap');
+            bubbleWrap.innerHTML = ''; // Clear existing bubbles
+
+            const bubbleSize = 54; // Size of each bubble
+            const bubbleGap = 5; // Gap between bubbles
+            const bubbleWrapWidth = bubbleWrap.clientWidth;
+            const columns = Math.floor(bubbleWrapWidth / (bubbleSize + bubbleGap));
+            const rows = 10; // Always 10 rows
+            const totalBubbles = columns * rows;
+
+            bubbleWrap.style.gridTemplateColumns = `repeat(${columns}, ${bubbleSize}px)`;
+
+            for (let i = 0; i < totalBubbles; i++) {
+                const bubble = document.createElement('div');
+                bubble.classList.add('bubble');
+                if (mode === 'color') {
+                    bubble.style.backgroundColor = getRandomImage();
+                } else {
+                    bubble.style.backgroundImage = `url(${getRandomImage()})`;
+                }
+                bubble.addEventListener('mousedown', startDragging);
+                bubble.addEventListener('mousemove', dragPopBubble);
+                bubble.addEventListener('mouseup', stopDragging);
+                bubble.addEventListener('touchstart', startDragging);
+                bubble.addEventListener('touchmove', dragPopBubble);
+                bubble.addEventListener('touchend', stopDragging);
+                bubble.style.transform = `rotate(${(Math.random() * 2 - 1)*(45)}deg)`;
+                bubbleWrap.appendChild(bubble);
+            }
+        }
+
+        function startDragging(event) {
+            isDragging = true;
+            popBubble(event);
+        }
+
+        function stopDragging() {
+            isDragging = false;
+        }
+
+        function dragPopBubble(event) {
+            if (isDragging) {
+                popBubble(event);
+            }
+        }
+
+        function popBubble(event) {
+            const bubble = event.target;
+            if (!bubble.classList.contains('popped')) {
+                bubble.classList.add('popped');
+                if (soundEffectsEnabled) {
+                    playPopSound();
+                }
+                counter++;
+                updateCounterBadge();
+                // Add subtle shake effect
+                bubble.style.transform += ' translateX(3px)';
+                setTimeout(() => bubble.style.transform = bubble.style.transform.replace(' translateX(3px)', ''), 50);
+                
+                // Regenerate after 10 seconds
+                setTimeout(() => {
+                    bubble.classList.remove('popped');
+                    if (mode === 'color') {
+                        bubble.style.backgroundColor = getRandomImage();
+                    } else {
+                        bubble.style.backgroundImage = `url(${getRandomImage()})`;
+                    }
+                }, 8000);
+            }
+        }
+
+        function toggleSoundEffects() {
+            soundEffectsEnabled = !soundEffectsEnabled;
+            const toggleSoundButton = document.getElementById('toggleSound');
+            if (soundEffectsEnabled) {
+            toggleSoundButton.classList.add('active');
+            } else {
+            toggleSoundButton.classList.remove('active');
+            }
+        }
+
+        function toggleMusic() {
+            musicEnabled = !musicEnabled;
+            const toggleMusicButton = document.getElementById('toggleMusic');
+            if (musicEnabled) {
+                backgroundMusic.play();
+                toggleMusicButton.classList.add('active');
+            } else {
+                backgroundMusic.pause();
+                toggleMusicButton.classList.remove('active');
+            }
+        }
+
+        const popSounds = [
+            'sounds/pop1.mp3',
+            'sounds/pop2.mp3',
+            'sounds/pop3.mp3',
+            'sounds/pop4.mp3',
+            'sounds/pop5.mp3',
+            'sounds/pop6.mp3',
+            'sounds/pop7.mp3',
+            'sounds/pop8.mp3'
+        ];
+
+        function playPopSound() {
+            const randomIndex = Math.floor(Math.random() * popSounds.length);
+            const audio = new Audio(popSounds[randomIndex]);
+            audio.play();
+        }
+
+        function updateCounterBadge() {
+            const counterBadge = document.getElementById('counterBadge');
+            if (counter > 0) {
+                counterBadge.textContent = counter;
+                counterBadge.style.display = 'inline-block';
+                counterBadge.classList.remove('shake'); // Ensure previous animation is reset
+                void counterBadge.offsetWidth; // Trigger a reflow to restart the animation
+                counterBadge.classList.add('shake');
+                counterBadge.style.color = '#cb1c32';
+                counterBadge.style.opacity = '1';
+                counterBadge.style.fontSize = '35px'
+                clearTimeout(fadeTimeout);
+                fadeTimeout = setTimeout(() => {
+                    counterBadge.style.opacity = '0';
+                }, 4000);
+                setTimeout(() => {
+                    counterBadge.style.fontSize = '30px'
+                    counterBadge.classList.remove('shake');
+                    counterBadge.style.color = 'grey';
+                }, 200);
+            } else {
+                counterBadge.style.display = 'none';
+            }
+        }
+
+        // Initialize bubbles
+        window.addEventListener('resize', createBubbles);
+        createBubbles();
+        updateActiveButton();
+    </script>
+</body>
+</html>
